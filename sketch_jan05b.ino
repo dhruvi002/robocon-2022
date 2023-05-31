@@ -23,6 +23,8 @@ int left_top, left_bot;
 int right_right, right_left;
 int min_pos = 0, min_mid_pos = 117, max_mid_pos = 137, max_pos = 255;
 int min_speed = 60, max_speed = 100;
+int left_button_speed, right_button_speed;
+int left_button, right_button;
 
 void setup() {
     Serial.begin(115200);
@@ -44,6 +46,10 @@ void setup() {
 void loop() {
   Usb.Task();
   if (PS3.PS3Connected || PS3.PS3NavigationConnected){
+
+    
+    left_button = PS3.getAnalogButton(L2);
+    right_button = PS3.getAnalogButton(R2);
     
     left_hat = PS3.getAnalogHat(LeftHatY);
     right_hat = PS3.getAnalogHat(RightHatX);
@@ -53,17 +59,20 @@ void loop() {
     right_right = map(right_hat, max_mid_pos, max_pos, min_speed, max_speed);
     right_left = map(right_hat, min_mid_pos, min_pos, min_speed, max_speed);
 
+    left_button_speed = map(left_button,min_pos, max_pos, min_speed, max_speed);
+    right_button_speed = map(right_button, min_pos, max_pos, min_speed, max_speed);
+
     if(left_hat > max_mid_pos){
-      digitalWrite(direction[1], LOW);
+      digitalWrite(direction[1], HIGH);
       analogWrite(speed [1], left_top);
-      digitalWrite(direction[3], HIGH);
+      digitalWrite(direction[3], LOW);
       analogWrite(speed [3], left_top);
     }
 
     if(left_hat < min_mid_pos){
-      digitalWrite(direction[1], HIGH);
+      digitalWrite(direction[1], LOW);
       analogWrite(speed [1], left_bot);
-      digitalWrite(direction[3], LOW);
+      digitalWrite(direction[3], HIGH);
       analogWrite(speed [3], left_bot);
     }
 
@@ -94,9 +103,31 @@ void loop() {
       digitalWrite(direction[3], HIGH);
       analogWrite(speed [3], 0);
     }
-          if (PS3.getButtonClick(PS)) {
+
+    if (left_button > 10 && right_button == 0) {
+      digitalWrite(direction[0], LOW);
+      analogWrite(speed [0], left_button_speed);  
+      digitalWrite(direction[1], LOW);
+      analogWrite(speed [1], left_button_speed);
+      digitalWrite(direction[2], LOW);
+      analogWrite(speed [2], left_button_speed);
+      digitalWrite(direction[3], LOW);
+      analogWrite(speed [3], left_button_speed);                
+      } 
+    }
+
+    if (right_button > 10 && left_button == 0) {
+      digitalWrite(direction[0], HIGH);
+      analogWrite(speed [0], right_button_speed);  
+      digitalWrite(direction[1], HIGH);
+      analogWrite(speed [1], right_button_speed);
+      digitalWrite(direction[2], HIGH);
+      analogWrite(speed [2], right_button_speed);
+      digitalWrite(direction[3], HIGH);
+      analogWrite(speed [3], right_button_speed); 
+    }
+    if (PS3.getButtonClick(PS)) {
       Serial.print(F("\r\nPS"));
       PS3.disconnect();
   }
-}
 }
